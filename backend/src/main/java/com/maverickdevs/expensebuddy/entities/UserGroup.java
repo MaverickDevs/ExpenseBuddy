@@ -1,6 +1,5 @@
 package com.maverickdevs.expensebuddy.entities;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,20 +11,19 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "usergroups")
+public class UserGroup {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    private String name;
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
-    @Column(unique = true)
-    private String email;
-
-    private String passwordHash;
-
-    private LocalDateTime createdAt;
+    private LocalDateTime joinedAt;
 
     // Getters and Setters
 }
