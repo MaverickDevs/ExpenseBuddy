@@ -1,0 +1,61 @@
+### Ignore Maven and Gradle dependencies ###
+/target/
+*.jar
+*.war
+*.ear
+
+/build/
+.gradle/
+out/
+
+### Ignore IntelliJ IDEA and Eclipse settings ###
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+### Ignore OS-specific files ###
+.DS_Store
+Thumbs.db
+
+### Ignore logs ###
+logs/
+*.log
+*.log.*
+/log/
+
+### Ignore temporary files ###
+/tmp/
+*.swp
+*.swo
+
+### Ignore H2 database files (if using file-based H2) ###
+*.h2.db
+*.mv.db
+*.trace.db
+
+### Ignore environment-specific files ###
+.env
+application.properties
+application.yml
+application-*.properties
+application-*.yml
+
+### Ignore test reports ###
+/test-output/
+/surefire-reports/
+/jacoco/
+
+### Ignore Lombok generated files ###
+.lombok/
+
+### Ignore Node.js (if frontend is included) ###
+node_modules/
+npm-debug.log
+
+### Ignore Git metadata ###
+.git/
+
