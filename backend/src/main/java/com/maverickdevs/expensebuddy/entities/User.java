@@ -18,14 +18,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String name;
+    private String username;
 
     @Column(unique = true)
     private String email;
 
-    private String passwordHash;
+    private String password;
 
     private LocalDateTime createdAt;
-
-    // Getters and Setters
+//
+//    @PrePersist
+//    protected void onCreate() {
+//        this.createdAt = LocalDateTime.now();
+//    }
 }
+
+

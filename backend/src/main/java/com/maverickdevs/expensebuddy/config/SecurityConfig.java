@@ -1,25 +1,73 @@
 package com.maverickdevs.expensebuddy.config;
 
+import com.maverickdevs.expensebuddy.auth.JwtAuthFilter;
+import com.maverickdevs.expensebuddy.repositories.UserRepository;
+import com.maverickdevs.expensebuddy.services.impl.UserServiceImpl;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableMethodSecurity
+@Data
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll() // Allow H2 Console
-                        .anyRequest().authenticated() // Secure other endpoints
-                )
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for H2 Console
-                .headers(headers -> headers.frameOptions().disable()) // Allow frames for H2 UI
-                .formLogin().disable()
-                .httpBasic();
+    private final PasswordEncoder passwordEncoder;
+    private final UserServiceImpl userService;
 
-        return http.build();
+    @Autowired
+    public SecurityConfig(PasswordEncoder passwordEncoder, UserServiceImpl userService){
+        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
+    }
+
+    @Bean
+    @Autowired
+    public UserServiceImpl userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+        return new UserServiceImpl(userRepository, passwordEncoder);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+
+        return http
+                .csrf(AbstractHttpConfigurer::disable).cors(CorsConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/v1/login", "/auth/v1/refreshToken", "/auth/v1/signup").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(Customizer.withDefaults())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider())
+                .build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        return authenticationProvider;
+
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }
