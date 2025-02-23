@@ -2,6 +2,7 @@ package com.maverickdevs.expensebuddy.services.impl;
 
 import com.maverickdevs.expensebuddy.entities.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class CustomUserDetails extends User implements UserDetails {
         this.password = byUsername.getPassword();
 
         List<GrantedAuthority> auths = new ArrayList<>();
+        auths.add(new SimpleGrantedAuthority("USER"));
 
         this.authorities = auths;
     }

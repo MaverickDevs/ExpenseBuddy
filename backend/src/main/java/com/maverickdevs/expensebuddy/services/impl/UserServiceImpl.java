@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -49,8 +48,7 @@ public class UserServiceImpl implements UserDetailsService {
         if(Objects.nonNull(checkIfUserAlreadyExists(userInfoDTO))){
             return false;
         }
-        Integer userId = Integer.parseInt(UUID.randomUUID().toString());
-        User newUser = new User(userId, userInfoDTO.getUsername(),userInfoDTO.getEmail(),userInfoDTO.getPassword(), LocalDateTime.now());
+        User newUser = new User(userInfoDTO.getUsername(),userInfoDTO.getEmail(),userInfoDTO.getPassword());
         userRepository.save(newUser);
         return true;
     }

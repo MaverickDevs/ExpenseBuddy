@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
@@ -14,9 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Service
 public class JwtServiceImpl {
 
-    public static final String SECRET = "blahblah";
+    public static final String SECRET = "iheuirth8745t68vngr8u34h5893jhfgn4956843j5g8n49807nt8475t84h5t897n478tn4785ht784t";
 
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);
@@ -63,6 +65,7 @@ public class JwtServiceImpl {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+
     }
 
     private Key getSignKey(){

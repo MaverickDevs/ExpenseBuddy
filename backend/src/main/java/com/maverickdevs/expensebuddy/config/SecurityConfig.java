@@ -17,6 +17,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -26,18 +28,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Data
 public class SecurityConfig {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserServiceImpl userService;
-
+    private final PasswordEncoder passwordEncoder;
     @Autowired
-    public SecurityConfig(PasswordEncoder passwordEncoder, UserServiceImpl userService){
+    public SecurityConfig(PasswordEncoder passwordEncoder,UserServiceImpl userService){
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
     }
 
     @Bean
-    @Autowired
-    public UserServiceImpl userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         return new UserServiceImpl(userRepository, passwordEncoder);
     }
 

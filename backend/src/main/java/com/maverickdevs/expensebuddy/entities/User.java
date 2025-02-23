@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
@@ -26,6 +25,13 @@ public class User {
     private String password;
 
     private LocalDateTime createdAt;
+
+    public User(String username, String email, String password){
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.createdAt = LocalDateTime.now();
+    }
 //
 //    @PrePersist
 //    protected void onCreate() {
