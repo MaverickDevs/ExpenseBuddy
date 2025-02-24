@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RefreshTokenRequestDTO {
-    private String token;
+public class AuthRequestDTO {
+    private String username;
+    private String password;
 }

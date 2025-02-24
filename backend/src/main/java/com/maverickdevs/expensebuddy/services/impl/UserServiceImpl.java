@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -36,6 +37,10 @@ public class UserServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("Could not find User!!");
         }
         return new CustomUserDetails(user);
+    }
+
+    public Integer getUserIdByUsername(String username){
+        return Optional.of(userRepository.findByUsername(username)).map(User::getId).orElse(null);
     }
 
     public User checkIfUserAlreadyExists(UserInfoDTO userInfoDto) {
