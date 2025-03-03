@@ -20,7 +20,7 @@ public class Expense {
     private UUID expenseId;
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "group_id")
     private Group group;
 
     @ManyToOne
