@@ -20,20 +20,36 @@ public class Expense {
     private UUID expenseId;
 
     @ManyToOne
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "group_id", nullable = true)
     private Group group;
 
     @ManyToOne
     @JoinColumn(name = "paid_by", nullable = false)
     private User paidBy;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ExpenseType expenseType;
+
     private BigDecimal amount;
 
     private String description;
 
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private CategoryType category;
 
     private LocalDateTime createdAt;
+
+    @PrePersist
+    @PreUpdate
+    private void validateExpense() {
+        if (expenseType == ExpenseType.GROUP && group == null) {
+            throw new IllegalArgumentException("Group expenses must have a group.");
+        }
+        if (expenseType == ExpenseType.PERSONAL && group != null) {
+            throw new IllegalArgumentException("Personal expenses cannot have a group.");
+        }
+    }
 
     // Getters and Setters
 }

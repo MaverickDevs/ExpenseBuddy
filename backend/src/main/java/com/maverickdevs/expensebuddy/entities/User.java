@@ -24,6 +24,8 @@ public class User {
 
     private String password;
 
+    //private Long phoneNumber;
+
     private LocalDateTime createdAt;
 
     public User(String username, String email, String password){
