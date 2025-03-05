@@ -11,10 +11,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 
 @Component
@@ -56,5 +55,13 @@ public class UserServiceImpl implements UserDetailsService {
         User newUser = new User(userInfoDTO.getUsername(),userInfoDTO.getEmail(),userInfoDTO.getPassword());
         userRepository.save(newUser);
         return true;
+    }
+
+    public List<User> getallusers(){
+        return userRepository.findAll();
+    }
+
+    public List<User> searchUsers(String query) {
+        return userRepository.findByusernameContainingIgnoreCase(query);
     }
 }
