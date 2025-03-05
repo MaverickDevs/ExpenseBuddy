@@ -116,6 +116,10 @@ backend/gradle-app.setting
 !backend/gradle-wrapper.jar
 backend/.gradletasknamecache
 
+backend/.gradle/*
+backend/build/*
+
+
 # ===== COMMON =====
 
 # IDE files
