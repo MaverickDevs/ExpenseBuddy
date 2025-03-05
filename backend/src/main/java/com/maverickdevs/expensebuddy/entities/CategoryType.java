@@ -5,6 +5,7 @@ public enum CategoryType {
     ENTERTAINMENT,
     LIVING,
     MEDICAL,
+    CLOTHING,
     PERSONAL,
-    SPORTS,
+    FITNESS,
 }
