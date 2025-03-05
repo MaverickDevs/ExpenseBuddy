@@ -3,7 +3,7 @@ import { Image, StyleSheet, Platform, View, TextInput, Button, Pressable, Text }
 import * as yup from 'yup';
 import axios from 'axios';
 
-export default function HomeScreen() {
+export default function SignupScreen() {
   interface FormData {
     username: string;
     email: string;
