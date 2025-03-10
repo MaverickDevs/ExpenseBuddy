@@ -1,31 +1,42 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+// app/_layout.tsx
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-SplashScreen.preventAutoHideAsync();
+import { useAuthStore } from '../store/authStore';
+import { ActivityIndicator, View } from 'react-native';
+import { useEffect, useState } from 'react';
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const [isHydrated, setIsHydrated] = useState(false);
+  const { isRefreshValid } = useAuthStore();
 
+  // Wait for Zustand to rehydrate
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    } 
-  }, [loaded]);
+    const rehydrate = async () => {
+      await useAuthStore.persist.rehydrate();
+      setIsHydrated(true);
+    };
+    rehydrate();
+  }, []);
 
-  if (!loaded) {
-    return null;
+  if (!isHydrated) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+    <Stack>
+      <Stack.Screen
+        name="(auth)"
+        options={{ headerShown: false }}
+        redirect={isRefreshValid()}
+      />
+      <Stack.Screen
+        name="(main)"
+        options={{ headerShown: false }}
+        redirect={!isRefreshValid()}
+      />
+    </Stack>
   );
 }
