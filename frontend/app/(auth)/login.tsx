@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Image, StyleSheet, Platform, View, TextInput, Button, Pressable, Text } from 'react-native';
 import * as yup from 'yup';
 import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
+import { apiBaseUrl } from '@/utils/constants';
 
 export default function LoginScreen() {
   interface FormData {
@@ -13,6 +15,8 @@ export default function LoginScreen() {
     username?: string;
     password?: string;
   }
+
+  const setTokens = useAuthStore((state) => state.setTokens);
 
   const [formData, setFormData] = useState<FormData>({
     username: '',
@@ -41,9 +45,10 @@ export default function LoginScreen() {
       console.log('Form is valid:', formData);
       // Call your API here
       try{
-        console.log("Hello")
-        const res = await axios.post('http://localhost:8080/auth/v1/login', {...formData});
+        const res = await axios.post(`${apiBaseUrl}/auth/v1/login`, {...formData});
         console.log(res.data)
+        const refreshExpiry = Date.now() + 7 * 24 * 3600 * 1000; // 7 days
+        setTokens(res.data.accessToken, res.data.token, refreshExpiry);
       }catch(error){
         console.log(error)
       }
@@ -89,7 +94,8 @@ export default function LoginScreen() {
       {errors.username ? <Text style={styles.errorText}>{errors.username}</Text> : null}
       <TextInput
         style={styles.formInput}
-        placeholder="Enter password"
+        placeholder="Enter password"    
+        secureTextEntry={true}
         value={formData.password}
         onChangeText={(text) => handleChange('password', text)}      />
        {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}

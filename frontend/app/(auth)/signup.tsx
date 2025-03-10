@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Image, StyleSheet, Platform, View, TextInput, Button, Pressable, Text } from 'react-native';
 import * as yup from 'yup';
 import axios from 'axios';
+import { apiBaseUrl } from '@/utils/constants';
 
 export default function SignupScreen() {
   interface FormData {
@@ -45,7 +46,7 @@ export default function SignupScreen() {
       // Call your API here
       try{
         console.log("Hello")
-        const res = await axios.post('http://localhost:8080/auth/v1/signup', {...formData});
+        const res = await axios.post(`${apiBaseUrl}/auth/v1/signup`, {...formData});
         console.log(res.data)
       }catch(error){
         console.log(error)
@@ -104,6 +105,7 @@ export default function SignupScreen() {
         style={styles.formInput}
         placeholder="Enter password"
         value={formData.password}
+        secureTextEntry={true}
         onChangeText={(text) => handleChange('password', text)}      />
        {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
       <Pressable  onPress={handleSubmit} style={styles.submitButton}><Text style={styles.buttonText}>Sign in</Text></Pressable>
