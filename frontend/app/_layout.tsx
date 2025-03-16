@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { useAuthStore } from '../store/authStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useEffect, useState } from 'react';
+import '../global.css';
 
 export default function RootLayout() {
   const [isHydrated, setIsHydrated] = useState(false);
