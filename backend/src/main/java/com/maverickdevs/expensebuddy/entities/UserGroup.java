@@ -13,13 +13,17 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "usergroups")
 public class UserGroup {
-    @Id
+
+    @EmbeddedId
+    private UserGroupId id;
+
     @ManyToOne
+    @MapsId("userId")
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Id
     @ManyToOne
+    @MapsId("groupId")
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 
