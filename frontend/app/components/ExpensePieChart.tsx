@@ -10,7 +10,7 @@ const ExpenseTracker = () => {
   const categories = [
     { name: 'Food', amount: 650, color: '#FF6B6B' },
     { name: 'Transport', amount: 450, color: '#4ECDC4' },
-    { name: 'Housing', amount: 400, color: '#45B7D1' },
+    { name: 'Shopping', amount: 400, color: '#45B7D1' },
     { name: 'Entertainment', amount: 250, color: '#FFBE0B' },
     { name: 'Utilities', amount: 100, color: '#FB5607' },
   ];
