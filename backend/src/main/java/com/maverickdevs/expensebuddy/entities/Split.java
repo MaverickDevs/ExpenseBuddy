@@ -2,6 +2,7 @@ package com.maverickdevs.expensebuddy.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Entity
+@Builder
 @Table(name = "splits")
 public class Split {
     @Id
@@ -33,7 +35,7 @@ public class Split {
 
     private BigDecimal splitAmount;
 
-    private Boolean isSettled = false;
+    private Boolean isSettled;
 
     private LocalDateTime createdAt;
 

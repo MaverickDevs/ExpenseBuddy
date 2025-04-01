@@ -1,5 +1,6 @@
 package com.maverickdevs.expensebuddy.controllers;
 
+import com.maverickdevs.expensebuddy.dto.request.ExpenseRequestDTO;
 import com.maverickdevs.expensebuddy.entities.Expense;
 import com.maverickdevs.expensebuddy.services.impl.ExpenseServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,5 +30,14 @@ public class ExpenseController {
             throw new EntityNotFoundException("No expenses found for group ID: " + groupId);
         }
         return ResponseEntity.ok(expenses);
+    }
+
+    @PostMapping("/addexpense")
+    public ResponseEntity<?> addExpense( ExpenseRequestDTO expenseRequestDTO){
+        Expense expense = expenseService.addExpense(expenseRequestDTO);
+        if (expense == null) {
+            throw new EntityNotFoundException("Failed to add expense");
+        }
+        return ResponseEntity.ok(expense);
     }
 }
