@@ -11,6 +11,7 @@ interface AuthState {
   setTokens: (accessToken: string, refreshToken:string,expiresIn: number) => void;
   clearTokens: () => void;
   isRefreshValid: () => boolean;
+  logout: () => Promise<void>;
 }
 
 type AuthPersist = {
@@ -74,7 +75,17 @@ export const useAuthStore = create<AuthState>()(
         const { refreshToken, refreshTokenExpiry } = get();
         const now = Date.now();
         return !!refreshToken && (refreshTokenExpiry || 0) > now;
-      }
+      },
+      logout: async () => {
+        // Clear both memory and SecureStore
+        await SecureStore.deleteItemAsync('auth-storage');
+        set({
+          accessToken: null,
+          refreshToken: null,
+          refreshTokenExpiry: null
+        });
+        // Add any additional cleanup here
+      },
     }),
     persistConfig
   )
