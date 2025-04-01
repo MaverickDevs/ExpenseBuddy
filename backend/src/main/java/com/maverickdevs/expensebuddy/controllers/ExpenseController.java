@@ -33,7 +33,8 @@ public class ExpenseController {
     }
 
     @PostMapping("/addexpense")
-    public ResponseEntity<?> addExpense( ExpenseRequestDTO expenseRequestDTO){
+    public ResponseEntity<?> addExpense( @RequestBody ExpenseRequestDTO expenseRequestDTO){
+        System.out.println("Incoming JSON: " + expenseRequestDTO);
         Expense expense = expenseService.addExpense(expenseRequestDTO);
         if (expense == null) {
             throw new EntityNotFoundException("Failed to add expense");

@@ -10,6 +10,9 @@ import com.maverickdevs.expensebuddy.repositories.ExpenseRepository;
 import com.maverickdevs.expensebuddy.repositories.GroupRepository;
 import com.maverickdevs.expensebuddy.repositories.SplitRepository;
 import com.maverickdevs.expensebuddy.repositories.UserRepository;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,8 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Service
 public class ExpenseServiceImpl {
+
+    private static final Logger log = LoggerFactory.getLogger(ExpenseServiceImpl.class);
 
     private final ExpenseRepository expenseRepository;
 
@@ -43,37 +49,48 @@ public class ExpenseServiceImpl {
 
     @Transactional
     public Expense addExpense(ExpenseRequestDTO expenseRequestDTO) {
-        User paid_by = userRepository.getById(expenseRequestDTO.getPaid_by());
-        ExpenseType expenseType = expenseRequestDTO.getGroup_id() == 0 ? ExpenseType.PERSONAL : ExpenseType.GROUP;
-        Expense expense = Expense.builder()
-                .category(expenseRequestDTO.getCategory())
-                .description(expenseRequestDTO.getDescription())
-                .amount(expenseRequestDTO.getTotal_amount())
-                .paidBy(paid_by)
-                .group(groupRepository.getById((expenseRequestDTO.getGroup_id())))
-                .createdAt(LocalDateTime.now())
-                .expenseType(expenseType)
-                .build();
-        expense = expenseRepository.save(expense);
-        List<UserShareDTO> userShareDTOList = expenseRequestDTO.getUserShareDTOList();
-        for(UserShareDTO userShareDTO: userShareDTOList){
-            //expenseRepository.save()
-            boolean isSettledForCreator = userShareDTO.getUserId().equals(paid_by.getId());
+        try {
+            User paid_by = userRepository.findById(expenseRequestDTO.getPaidBy())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            ExpenseType expenseType = expenseRequestDTO.getGroupId() == 0 ? ExpenseType.PERSONAL : ExpenseType.GROUP;
 
-            Split split = Split.builder()
-                    .expense(expense)
+            Expense expense = Expense.builder()
+                    .category(expenseRequestDTO.getCategory())
+                    .description(expenseRequestDTO.getDescription())
+                    .amount(expenseRequestDTO.getTotalAmount())
+                    .paidBy(paid_by)
+                    .group(groupRepository.findById(expenseRequestDTO.getGroupId())
+                            .orElseThrow(() -> new RuntimeException("Group not found")))
                     .createdAt(LocalDateTime.now())
-                    .creditor(paid_by)
-                    .isSettled(isSettledForCreator)
-                    .settledAt(isSettledForCreator ? LocalDateTime.now() : null)
-                    .debtor(userRepository.getById(userShareDTO.getUserId()))
-                    .splitAmount(userShareDTO.getShareAmount())
+                    .expenseType(expenseType)
                     .build();
-            splitRepository.save(split);
+
+            Expense createdexpense = expenseRepository.save(expense);
+
+            List<UserShareDTO> userShareDTOList = expenseRequestDTO.getUserShareDTOList();
+            for (UserShareDTO userShareDTO : userShareDTOList) {
+                boolean isSettledForCreator = userShareDTO.getUserId().equals(paid_by.getId());
+
+                Split split = Split.builder()
+                        .expense(createdexpense)
+                        .createdAt(LocalDateTime.now())
+                        .creditor(paid_by)
+                        .isSettled(isSettledForCreator)
+                        .settledAt(isSettledForCreator ? LocalDateTime.now() : null)
+                        .debtor(userRepository.findById(expenseRequestDTO.getPaidBy())
+                            .orElseThrow(() -> new RuntimeException("User not found")))
+                        .splitAmount(userShareDTO.getShareAmount())
+                        .build();
+
+                splitRepository.save(split);
+            }
+
+            return createdexpense;
+
+        } catch (Exception e) {
+            log.error("Error occurred while adding expense: {}", e.getMessage(), e); // Log full exception
+            throw new RuntimeException("Error occurred while adding expense", e);
         }
-
-
-
-        return expense;
     }
+
 }
