@@ -1,11 +1,10 @@
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Avatar } from 'react-native-elements';
-import ExpensePieChart from '../components/ExpensePieChart';
 
 export default function HomeScreen() {
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <View>
       <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3">
         <Text className="text-2xl font-bold">ExpenseBuddy</Text>
         <View className='flex-row items-center gap-3'>
@@ -20,9 +19,7 @@ export default function HomeScreen() {
         </View>
       </View>
       
-      <ExpensePieChart/>
-
-    </ScrollView>
+    </View>
     
   );
 }
