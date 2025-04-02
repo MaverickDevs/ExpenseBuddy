@@ -44,6 +44,7 @@ public class GroupServiceImpl {
 
     @Transactional
     public Group updateGroup(Integer groupId, GroupRequestDTO groupUpdateDTO) {
+        //This is returning group for now, can modify it to return response DTO later
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
 
@@ -91,7 +92,7 @@ public class GroupServiceImpl {
         }
     }
 
-    public Group createGroup(GroupRequestDTO groupRequestDTO) {
+    public GroupResponseDTO createGroup(GroupRequestDTO groupRequestDTO) {
         Group group = new Group();
         group.setName(groupRequestDTO.getName());
         group.setCreatedAt(LocalDateTime.now());
@@ -117,7 +118,7 @@ public class GroupServiceImpl {
                 .users(userList)
                 .owedAmount(BigDecimal.valueOf(0))
                 .build();
-        return groupCreated;
+        return groupResponseDTO;
     }
 
     public List<User> getUsersByGroupId(Integer groupId){

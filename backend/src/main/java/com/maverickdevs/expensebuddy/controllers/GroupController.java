@@ -39,11 +39,11 @@ public class GroupController {
     }
     @PostMapping("/create")
     public ResponseEntity<?> addgroup(@RequestBody GroupRequestDTO groupRequestDTO){
-        Group newGroup = groupService.createGroup(groupRequestDTO);
-        if (newGroup == null) {
+        GroupResponseDTO groupResponseDTO = groupService.createGroup(groupRequestDTO);
+        if (groupResponseDTO == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cannot create group");
         }
-        return ResponseEntity.ok(newGroup);
+        return ResponseEntity.ok(groupResponseDTO);
     }
 
     @PutMapping("/{groupId}")
