@@ -9,6 +9,7 @@ import com.maverickdevs.expensebuddy.entities.UserGroupId;
 import com.maverickdevs.expensebuddy.repositories.GroupRepository;
 import com.maverickdevs.expensebuddy.repositories.UserGroupRepository;
 import com.maverickdevs.expensebuddy.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,7 +23,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Data
@@ -41,6 +46,55 @@ public class GroupServiceImpl {
     }
     public List<Group> getallgroups(){
         return groupRepository.findAll();
+    }
+
+    @Transactional
+    public Group updateGroup(Integer groupId, GroupRequestDTO groupUpdateDTO) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+
+        // Update the name if provided
+        if (groupUpdateDTO.getName() != null) {
+            group.setName(groupUpdateDTO.getName());
+        }
+
+        // Update members if provided
+        if (groupUpdateDTO.getUserIds() != null) {
+            updateUserGroupRelations(group, groupUpdateDTO.getUserIds());
+        }
+
+        group.setLastModifiedAt(LocalDateTime.now());
+        return groupRepository.save(group);
+    }
+
+    @Transactional
+    public void updateUserGroupRelations(Group group, List<Integer> newUserIds) {
+        List<UserGroup> existingUserGroups = userGroupRepository.findByGroupId(group.getGroupId());
+        Set<Integer> existingUserIds = existingUserGroups.stream()
+                .map(ug -> ug.getUser().getId())
+                .collect(Collectors.toSet());
+
+        // Remove users who are no longer in the group
+        for (UserGroup userGroup : existingUserGroups) {
+            if (!newUserIds.contains(userGroup.getUser().getId())) {
+                userGroupRepository.delete(userGroup);
+            }
+        }
+
+        // Add new users
+        for (Integer userId : newUserIds) {
+            if (!existingUserIds.contains(userId)) {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                UserGroup newUserGroup = new UserGroup(
+                        new UserGroupId(userId, group.getGroupId()),
+                        user,
+                        group,
+                        LocalDateTime.now()
+                );
+                userGroupRepository.save(newUserGroup);
+            }
+        }
     }
 
     public Group createGroup(GroupRequestDTO groupRequestDTO) {

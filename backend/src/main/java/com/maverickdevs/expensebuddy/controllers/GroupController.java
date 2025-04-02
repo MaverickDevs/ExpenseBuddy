@@ -45,6 +45,12 @@ public class GroupController {
         return ResponseEntity.ok(newGroup);
     }
 
+    @PutMapping("/{groupId}")
+    public ResponseEntity<Group> updateGroup(@PathVariable Integer groupId, @RequestBody GroupRequestDTO groupUpdateDTO) {
+        Group updatedGroup = groupService.updateGroup(groupId, groupUpdateDTO);
+        return ResponseEntity.ok(updatedGroup);
+    }
+
     @GetMapping("/{userId}/groups")
     public ResponseEntity<?> getgroupsforuser(@PathVariable("userId") Integer userId,@RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "10") int size){
