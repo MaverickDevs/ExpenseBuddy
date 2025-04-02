@@ -1,5 +1,6 @@
 package com.maverickdevs.expensebuddy.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,6 +38,7 @@ public class Split {
 
     private Boolean isSettled;
 
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     private LocalDateTime settledAt;

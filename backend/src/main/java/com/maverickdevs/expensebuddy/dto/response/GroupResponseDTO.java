@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GroupResponseDTO {
+
+    private Integer groupId;
+
     private String name;
 
     private BigDecimal owedAmount;

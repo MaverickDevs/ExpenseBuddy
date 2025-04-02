@@ -63,8 +63,7 @@ public class GroupServiceImpl {
     }
 
     public List<User> getUsersByGroupId(Integer groupId){
-        List<User> users = userGroupRepository.findUsersByGroupId(groupId);
-        return users;
+        return userGroupRepository.findUsersByGroupId(groupId);
     }
 
     public Page<GroupResponseDTO> getUserGroups(Integer userId, int page, int size) {
@@ -72,10 +71,11 @@ public class GroupServiceImpl {
         Page<Object[]> results = groupRepository.findGroupsWithDetails(userId, pageable);
 
         return results.map(row -> new GroupResponseDTO(
-                (String) row[0],  // name
-                ((BigDecimal) row[1]),  // owedAmount
-                ((Number) row[2]).intValue(), // numberOfPeople
-                (row[3] != null ? ((Timestamp) row[3]).toLocalDateTime() : null) // lastModifiedAt
+                (Integer) row[0],
+                (String) row[1],  // name
+                ((BigDecimal) row[2]),  // owedAmount
+                ((Number) row[3]).intValue(), // numberOfPeople
+                (row[4] != null ? ((Timestamp) row[3]).toLocalDateTime() : null) // lastModifiedAt
         ));
     }
 

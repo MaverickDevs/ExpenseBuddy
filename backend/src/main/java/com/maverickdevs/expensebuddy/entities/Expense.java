@@ -1,5 +1,6 @@
 package com.maverickdevs.expensebuddy.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,7 @@ public class Expense {
     @Enumerated(EnumType.STRING)
     private CategoryType category;
 
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     @PrePersist

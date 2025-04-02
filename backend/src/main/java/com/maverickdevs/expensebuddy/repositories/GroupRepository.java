@@ -19,15 +19,15 @@ public interface GroupRepository extends JpaRepository<Group, Integer> {
                COUNT(ug.user_id) AS numberOfPeople, 
                g.last_modified_at AS lastModifiedAt 
         FROM groups g
-        JOIN usergroups ug ON ug.group_id = g.id  
-        LEFT JOIN expenses e ON e.group_id = g.id AND e.paid_by <> :userId
+        JOIN usergroups ug ON ug.group_id = g.group_id  
+        LEFT JOIN expenses e ON e.group_id = g.group_id AND e.paid_by <> :userId
         WHERE ug.user_id = :userId  
-        GROUP BY g.id, g.name, g.last_modified_at
+        GROUP BY g.group_id, g.name, g.last_modified_at
         """,
             countQuery = """
-        SELECT COUNT(DISTINCT g.id) 
+        SELECT COUNT(DISTINCT g.group_id) 
         FROM groups g
-        JOIN usergroups ug ON ug.group_id = g.id
+        JOIN usergroups ug ON ug.group_id = g.group_id
         WHERE ug.user_id = :userId
         """,
             nativeQuery = true)
