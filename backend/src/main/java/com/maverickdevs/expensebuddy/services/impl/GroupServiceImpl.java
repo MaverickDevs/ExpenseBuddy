@@ -12,20 +12,14 @@ import com.maverickdevs.expensebuddy.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -106,13 +100,23 @@ public class GroupServiceImpl {
         group.setCreatedBy(creator);
         Group groupCreated = groupRepository.save(group);
         List<Integer> usersingroup = groupRequestDTO.getUserIds();
+        List<User> userList = new java.util.ArrayList<>(List.of());
         for(Integer userId : usersingroup){
             User tempUser = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            userList.add(tempUser);
             UserGroup userGroup = new UserGroup(new UserGroupId(userId, groupCreated.getGroupId()), tempUser, groupCreated, LocalDateTime.now());
             userGroupRepository.save(userGroup);
 
         }
+
+        GroupResponseDTO groupResponseDTO = GroupResponseDTO.builder()
+                .groupId(groupCreated.getGroupId())
+                .lastModifiedAt(groupCreated.getLastModifiedAt())
+                .name(groupCreated.getName())
+                .users(userList)
+                .owedAmount(BigDecimal.valueOf(0))
+                .build();
         return groupCreated;
     }
 
@@ -120,17 +124,32 @@ public class GroupServiceImpl {
         return userGroupRepository.findUsersByGroupId(groupId);
     }
 
-    public Page<GroupResponseDTO> getUserGroups(Integer userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("lastModifiedAt").descending());
-        Page<Object[]> results = groupRepository.findGroupsWithDetails(userId, pageable);
-
-        return results.map(row -> new GroupResponseDTO(
-                (Integer) row[0],
-                (String) row[1],  // name
-                ((BigDecimal) row[2]),  // owedAmount
-                ((Number) row[3]).intValue(), // numberOfPeople
-                (row[4] != null ? ((Timestamp) row[3]).toLocalDateTime() : null) // lastModifiedAt
-        ));
-    }
+//    public Page<GroupResponseDTO> getUserGroups(Integer userId, int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("lastModifiedAt").descending());
+//        Page<Object[]> results = groupRepository.findGroupsWithDetails(userId, pageable);
+//
+////        return results.map(row -> new GroupResponseDTO(
+////                (Integer) row[0],
+////                (String) row[1],  // name
+////                ((BigDecimal) row[2]),  // owedAmount
+////                ((Number) row[3]).intValue(), // numberOfPeople
+////                (row[4] != null ? ((Timestamp) row[3]).toLocalDateTime() : null) // lastModifiedAt
+////        ));
+//
+//        return results.map(row -> {
+//            Integer groupId = (Integer) row[0];
+//
+//            // Fetch users for this group using the groupId
+//            List<User> groupUsers = userGroupRepository.findUsersByGroupId(groupId);
+//
+//            return GroupResponseDTO.builder()
+//                    .groupId(groupId)
+//                    .name((String) row[1])
+//                    .owedAmount((BigDecimal) row[2])
+//                    .users(groupUsers)  // Set the list of users
+//                    .lastModifiedAt(row[4] != null ? ((Timestamp) row[4]).toLocalDateTime() : null)
+//                    .build();
+//        });
+//    }
 
 }

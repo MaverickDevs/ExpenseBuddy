@@ -10,6 +10,7 @@ import com.maverickdevs.expensebuddy.services.impl.UserServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.support.NullValue;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -51,17 +52,17 @@ public class GroupController {
         return ResponseEntity.ok(updatedGroup);
     }
 
-    @GetMapping("/{userId}/groups")
-    public ResponseEntity<?> getgroupsforuser(@PathVariable("userId") Integer userId,@RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "10") int size){
-        //do nothing
-
-        Page<GroupResponseDTO> groupResponseDTOS = groupService.getUserGroups(userId,page,size);
-        if(groupResponseDTOS == null){
-            throw new EntityNotFoundException("No groups found for user ID: " + userId);
-        }
-        return ResponseEntity.ok(groupResponseDTOS);
-    }
+//    @GetMapping("/{userId}/groups")
+//    public ResponseEntity<?> getgroupsforuser(@PathVariable("userId") Integer userId,@RequestParam(defaultValue = "0") int page,
+//                                                    @RequestParam(defaultValue = "10") int size){
+//        //do nothing
+//
+//        Page<GroupResponseDTO> groupResponseDTOS = groupService.getUserGroups(userId,page,size);
+//        if(groupResponseDTOS == null){
+//            throw new EntityNotFoundException("No groups found for user ID: " + userId);
+//        }
+//        return ResponseEntity.ok(new PagedModel<>groupResponseDTOS);
+//    }
 
 
 }
