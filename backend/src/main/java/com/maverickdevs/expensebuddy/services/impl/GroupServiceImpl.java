@@ -125,32 +125,5 @@ public class GroupServiceImpl {
         return userGroupRepository.findUsersByGroupId(groupId);
     }
 
-//    public Page<GroupResponseDTO> getUserGroups(Integer userId, int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("lastModifiedAt").descending());
-//        Page<Object[]> results = groupRepository.findGroupsWithDetails(userId, pageable);
-//
-////        return results.map(row -> new GroupResponseDTO(
-////                (Integer) row[0],
-////                (String) row[1],  // name
-////                ((BigDecimal) row[2]),  // owedAmount
-////                ((Number) row[3]).intValue(), // numberOfPeople
-////                (row[4] != null ? ((Timestamp) row[3]).toLocalDateTime() : null) // lastModifiedAt
-////        ));
-//
-//        return results.map(row -> {
-//            Integer groupId = (Integer) row[0];
-//
-//            // Fetch users for this group using the groupId
-//            List<User> groupUsers = userGroupRepository.findUsersByGroupId(groupId);
-//
-//            return GroupResponseDTO.builder()
-//                    .groupId(groupId)
-//                    .name((String) row[1])
-//                    .owedAmount((BigDecimal) row[2])
-//                    .users(groupUsers)  // Set the list of users
-//                    .lastModifiedAt(row[4] != null ? ((Timestamp) row[4]).toLocalDateTime() : null)
-//                    .build();
-//        });
-//    }
 
 }

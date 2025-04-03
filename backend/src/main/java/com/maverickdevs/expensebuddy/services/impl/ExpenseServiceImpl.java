@@ -98,7 +98,7 @@ public Page<ExpenseResponseDTO> getExpensesByGroupId(Integer groupId, int page, 
                         .creditor(paid_by)
                         .isSettled(isSettledForCreator)
                         .settledAt(isSettledForCreator ? LocalDateTime.now() : null)
-                        .debtor(userRepository.findById(expenseRequestDTO.getPaidBy())
+                        .debtor(userRepository.findById(userShareDTO.getUserId())
                             .orElseThrow(() -> new RuntimeException("User not found")))
                         .splitAmount(userShareDTO.getShareAmount())
                         .build();

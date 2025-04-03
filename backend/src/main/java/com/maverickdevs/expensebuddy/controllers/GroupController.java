@@ -52,17 +52,7 @@ public class GroupController {
         return ResponseEntity.ok(updatedGroup);
     }
 
-//    @GetMapping("/{userId}/groups")
-//    public ResponseEntity<?> getgroupsforuser(@PathVariable("userId") Integer userId,@RequestParam(defaultValue = "0") int page,
-//                                                    @RequestParam(defaultValue = "10") int size){
-//        //do nothing
-//
-//        Page<GroupResponseDTO> groupResponseDTOS = groupService.getUserGroups(userId,page,size);
-//        if(groupResponseDTOS == null){
-//            throw new EntityNotFoundException("No groups found for user ID: " + userId);
-//        }
-//        return ResponseEntity.ok(new PagedModel<>groupResponseDTOS);
-//    }
+    //get groups using userid
 
 
 }
