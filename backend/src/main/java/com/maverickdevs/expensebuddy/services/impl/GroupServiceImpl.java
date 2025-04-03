@@ -9,22 +9,23 @@ import com.maverickdevs.expensebuddy.entities.UserGroupId;
 import com.maverickdevs.expensebuddy.repositories.GroupRepository;
 import com.maverickdevs.expensebuddy.repositories.UserGroupRepository;
 import com.maverickdevs.expensebuddy.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Data
+@Service
 public class GroupServiceImpl {
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
@@ -41,7 +42,57 @@ public class GroupServiceImpl {
         return groupRepository.findAll();
     }
 
-    public Group createGroup(GroupRequestDTO groupRequestDTO) {
+    @Transactional
+    public Group updateGroup(Integer groupId, GroupRequestDTO groupUpdateDTO) {
+        //This is returning group for now, can modify it to return response DTO later
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+
+        // Update the name if provided
+        if (groupUpdateDTO.getName() != null) {
+            group.setName(groupUpdateDTO.getName());
+        }
+
+        // Update members if provided
+        if (groupUpdateDTO.getUserIds() != null) {
+            updateUserGroupRelations(group, groupUpdateDTO.getUserIds());
+        }
+
+        group.setLastModifiedAt(LocalDateTime.now());
+        return groupRepository.save(group);
+    }
+
+    @Transactional
+    public void updateUserGroupRelations(Group group, List<Integer> newUserIds) {
+        List<UserGroup> existingUserGroups = userGroupRepository.findByGroupId(group.getGroupId());
+        Set<Integer> existingUserIds = existingUserGroups.stream()
+                .map(ug -> ug.getUser().getId())
+                .collect(Collectors.toSet());
+
+        // Remove users who are no longer in the group
+        for (UserGroup userGroup : existingUserGroups) {
+            if (!newUserIds.contains(userGroup.getUser().getId())) {
+                userGroupRepository.delete(userGroup);
+            }
+        }
+
+        // Add new users
+        for (Integer userId : newUserIds) {
+            if (!existingUserIds.contains(userId)) {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                UserGroup newUserGroup = new UserGroup(
+                        new UserGroupId(userId, group.getGroupId()),
+                        user,
+                        group,
+                        LocalDateTime.now()
+                );
+                userGroupRepository.save(newUserGroup);
+            }
+        }
+    }
+
+    public GroupResponseDTO createGroup(GroupRequestDTO groupRequestDTO) {
         Group group = new Group();
         group.setName(groupRequestDTO.getName());
         group.setCreatedAt(LocalDateTime.now());
@@ -50,31 +101,29 @@ public class GroupServiceImpl {
         group.setCreatedBy(creator);
         Group groupCreated = groupRepository.save(group);
         List<Integer> usersingroup = groupRequestDTO.getUserIds();
+        List<User> userList = new java.util.ArrayList<>(List.of());
         for(Integer userId : usersingroup){
             User tempUser = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            userList.add(tempUser);
             UserGroup userGroup = new UserGroup(new UserGroupId(userId, groupCreated.getGroupId()), tempUser, groupCreated, LocalDateTime.now());
             userGroupRepository.save(userGroup);
 
         }
-        return groupCreated;
+
+        GroupResponseDTO groupResponseDTO = GroupResponseDTO.builder()
+                .groupId(groupCreated.getGroupId())
+                .lastModifiedAt(groupCreated.getLastModifiedAt())
+                .name(groupCreated.getName())
+                .users(userList)
+                .owedAmount(BigDecimal.valueOf(0))
+                .build();
+        return groupResponseDTO;
     }
 
     public List<User> getUsersByGroupId(Integer groupId){
-        List<User> users = userGroupRepository.findUsersByGroupId(groupId);
-        return users;
+        return userGroupRepository.findUsersByGroupId(groupId);
     }
 
-    public Page<GroupResponseDTO> getUserGroups(Integer userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("lastModifiedAt").descending());
-        Page<Object[]> results = groupRepository.findGroupsWithDetails(userId, pageable);
-
-        return results.map(row -> new GroupResponseDTO(
-                (String) row[0],  // name
-                ((BigDecimal) row[1]),  // owedAmount
-                ((Number) row[2]).intValue(), // numberOfPeople
-                (row[3] != null ? ((Timestamp) row[3]).toLocalDateTime() : null) // lastModifiedAt
-        ));
-    }
 
 }

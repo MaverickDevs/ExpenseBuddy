@@ -1,6 +1,7 @@
 package com.maverickdevs.expensebuddy.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,10 +23,11 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @JsonIgnore
     private String password;
 
     //private Long phoneNumber;
-
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     public User(String username, String email, String password){
