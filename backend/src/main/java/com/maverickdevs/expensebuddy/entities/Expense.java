@@ -1,9 +1,8 @@
 package com.maverickdevs.expensebuddy.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Entity
+@Builder
+@Getter
 @Table(name = "expenses")
 public class Expense {
     @Id
@@ -38,6 +39,7 @@ public class Expense {
     @Enumerated(EnumType.STRING)
     private CategoryType category;
 
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     @PrePersist

@@ -15,7 +15,7 @@ public interface UserGroupRepository extends JpaRepository<UserGroup, Integer> {
     @Query("SELECT ug.user FROM UserGroup ug WHERE ug.group.groupId = :groupId")
     List<User> findUsersByGroupId(Integer groupId);
 
-    @Query("SELECT COUNT(ug.userId) FROM UserGroup ug WHERE ug.groupId = :groupId")
-    int getUserCountByGroupId(Integer groupId);
+    @Query("SELECT ug FROM UserGroup ug WHERE ug.id.groupId = :groupId")
+    List<UserGroup> findByGroupId(Integer groupId);
 
 }

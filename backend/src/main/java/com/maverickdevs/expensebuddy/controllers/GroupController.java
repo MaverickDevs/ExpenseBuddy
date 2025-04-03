@@ -10,6 +10,7 @@ import com.maverickdevs.expensebuddy.services.impl.UserServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.support.NullValue;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -38,24 +39,20 @@ public class GroupController {
     }
     @PostMapping("/create")
     public ResponseEntity<?> addgroup(@RequestBody GroupRequestDTO groupRequestDTO){
-        Group newGroup = groupService.createGroup(groupRequestDTO);
-        if (newGroup == null) {
+        GroupResponseDTO groupResponseDTO = groupService.createGroup(groupRequestDTO);
+        if (groupResponseDTO == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cannot create group");
         }
-        return ResponseEntity.ok(newGroup);
+        return ResponseEntity.ok(groupResponseDTO);
     }
 
-    @GetMapping("/{userId}/groups")
-    public ResponseEntity<?> getgroupsforuser(@PathVariable("userId") Integer userId,@RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "10") int size){
-        //do nothing
-
-        Page<GroupResponseDTO> groupResponseDTOS = groupService.getUserGroups(userId,page,size);
-        if(groupResponseDTOS == null){
-            throw new EntityNotFoundException("No groups found for user ID: " + userId);
-        }
-        return ResponseEntity.ok(groupResponseDTOS);
+    @PutMapping("/{groupId}")
+    public ResponseEntity<Group> updateGroup(@PathVariable Integer groupId, @RequestBody GroupRequestDTO groupUpdateDTO) {
+        Group updatedGroup = groupService.updateGroup(groupId, groupUpdateDTO);
+        return ResponseEntity.ok(updatedGroup);
     }
+
+    //get groups using userid
 
 
 }
