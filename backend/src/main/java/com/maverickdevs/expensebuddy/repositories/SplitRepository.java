@@ -14,5 +14,5 @@ import java.util.UUID;
 public interface SplitRepository extends JpaRepository<Split, UUID> {
 
     @Query("SELECT s FROM Split s WHERE s.expense = :expense")
-    List<Split> getSplitsByExpense(@Param("expense") Expense expense);
+    List<Split> findByExpense(@Param("expense") Expense expense);
 }

@@ -2,14 +2,14 @@ package com.maverickdevs.expensebuddy.controllers;
 
 import com.maverickdevs.expensebuddy.dto.request.ExpenseRequestDTO;
 import com.maverickdevs.expensebuddy.dto.response.ExpenseResponseDTO;
-import com.maverickdevs.expensebuddy.entities.Expense;
+import com.maverickdevs.expensebuddy.dto.response.ExpenseWithSplitsResponseDTO;
+import com.maverickdevs.expensebuddy.dto.response.ExpenseWithoutSplitsResponseDTO;
 import com.maverickdevs.expensebuddy.services.impl.ExpenseServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,14 +25,18 @@ public class ExpenseController {
 
     //Get all expenses related to a group
     @GetMapping("/{groupId}/expenses")
-    public ResponseEntity<Page<?>> getExpenses(@PathVariable("groupId") Integer groupId,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "10") int size) {
-        Page<ExpenseResponseDTO> expenseResponseDTOS = expenseService.getExpensesByGroupId(groupId, page, size);
+    public ResponseEntity<List<ExpenseWithoutSplitsResponseDTO>> getExpenses(@PathVariable("groupId") Integer groupId) {
+        List<ExpenseWithoutSplitsResponseDTO> expenseResponseDTOS = expenseService.getExpensesByGroupId(groupId);
         if (expenseResponseDTOS == null || expenseResponseDTOS.isEmpty()) {
             throw new EntityNotFoundException("No expenses found for group ID: " + groupId);
         }
         return ResponseEntity.ok(expenseResponseDTOS);
+    }
+
+    @GetMapping("/{groupId}/expenses/{expenseId}/splits")
+    public ResponseEntity<ExpenseWithSplitsResponseDTO> getExpenseWithSplits(@PathVariable("expenseId") UUID expenseId){
+        ExpenseWithSplitsResponseDTO expenseWithSplitsResponseDTO = expenseService.getExpenseWithSplits(expenseId);
+        return ResponseEntity.ok(expenseWithSplitsResponseDTO);
     }
 
     @PostMapping("/addexpense")

@@ -2,12 +2,8 @@ package com.maverickdevs.expensebuddy.services.impl;
 
 import com.maverickdevs.expensebuddy.dto.request.ExpenseRequestDTO;
 import com.maverickdevs.expensebuddy.dto.request.UserShareDTO;
-import com.maverickdevs.expensebuddy.dto.response.ExpenseResponseDTO;
-import com.maverickdevs.expensebuddy.dto.response.UserDTO;
-import com.maverickdevs.expensebuddy.entities.Expense;
-import com.maverickdevs.expensebuddy.entities.ExpenseType;
-import com.maverickdevs.expensebuddy.entities.Split;
-import com.maverickdevs.expensebuddy.entities.User;
+import com.maverickdevs.expensebuddy.dto.response.*;
+import com.maverickdevs.expensebuddy.entities.*;
 import com.maverickdevs.expensebuddy.repositories.ExpenseRepository;
 import com.maverickdevs.expensebuddy.repositories.GroupRepository;
 import com.maverickdevs.expensebuddy.repositories.SplitRepository;
@@ -16,18 +12,22 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -53,20 +53,47 @@ public class ExpenseServiceImpl {
 //    public Page<Expense> getExpensesByGroupId(Integer groupId, int page, int size) {
 //        return expenseRepository.findByGroupId(groupId, PageRequest.of(page, size, Sort.by("createdAt").descending()));
 //    }
-public Page<ExpenseResponseDTO> getExpensesByGroupId(Integer groupId, int page, int size) {
-    Page<Expense> expensesPage = expenseRepository.findByGroupId(groupId,
-            PageRequest.of(page, size, Sort.by("createdAt").descending()));
+public List<ExpenseWithoutSplitsResponseDTO> getExpensesByGroupId(Integer groupId) {
 
-    return expensesPage.map(expense -> ExpenseResponseDTO.builder()
-            .expenseId(expense.getExpenseId())
-            .groupId(expense.getGroup() != null ? expense.getGroup().getGroupId() : null)
-            .paidBy(expense.getPaidBy())
-            .expenseType(expense.getExpenseType())
-            .amount(expense.getAmount())
-            .description(expense.getDescription())
-            .categoryType(expense.getCategory())
-            .build());
+    Group group = groupRepository.findById(groupId).orElseThrow(() -> new RuntimeException("Group not found"));
+    return expenseRepository.findByGroupOrderByCreatedAtDesc(group).stream().map(expense -> {
+        ExpenseWithoutSplitsResponseDTO dto = new ExpenseWithoutSplitsResponseDTO();
+        dto.setExpenseId(expense.getExpenseId());
+        dto.setPaidById(expense.getPaidBy().getId());
+        dto.setAmount(expense.getAmount());
+        dto.setDescription(expense.getDescription());
+        dto.setCategory(expense.getCategory());
+        dto.setCreatedAt(expense.getCreatedAt());
+        return dto;
+    }).collect(Collectors.toList());
 }
+
+public ExpenseWithSplitsResponseDTO getExpenseWithSplits(UUID expenseId){
+        Expense expense = expenseRepository.findById(expenseId).orElseThrow(()-> new ResourceAccessException("Expense Not Found"));
+
+        ExpenseWithSplitsResponseDTO expenseDetails = new ExpenseWithSplitsResponseDTO();
+        expenseDetails.setExpenseId(expense.getExpenseId());
+        expenseDetails.setPaidBy(expense.getPaidBy().getId());
+        expenseDetails.setAmount(expense.getAmount());
+        expenseDetails.setDescription(expense.getDescription());
+
+        List<Split> splits = splitRepository.findByExpense(expense);
+
+        expenseDetails.setSplits(splits.stream().map(split ->{
+            SplitResponseDTO dto = new SplitResponseDTO();
+            dto.setSplitId(split.getSplitId());
+            dto.setIsSettled(split.getIsSettled());
+            dto.setSplitAmount(split.getSplitAmount());
+            dto.setCreditorId(split.getCreditor().getId());
+            dto.setDebtorId(split.getDebtor().getId());
+            dto.setSettledAt(split.getSettledAt());
+
+            return dto;
+        }).collect(Collectors.toList()));
+
+        return expenseDetails;
+}
+
 
     @Transactional
     public ExpenseResponseDTO addExpense(ExpenseRequestDTO expenseRequestDTO) {
@@ -80,8 +107,8 @@ public Page<ExpenseResponseDTO> getExpensesByGroupId(Integer groupId, int page, 
                     .description(expenseRequestDTO.getDescription())
                     .amount(expenseRequestDTO.getTotalAmount())
                     .paidBy(paid_by)
-                    .group(groupRepository.findById(expenseRequestDTO.getGroupId())
-                            .orElseThrow(() -> new RuntimeException("Group not found")))
+                    .group(expenseType.equals(ExpenseType.GROUP)?groupRepository.findById(expenseRequestDTO.getGroupId())
+                            .orElseThrow(() -> new RuntimeException("Group not found")):(null))
                     .createdAt(LocalDateTime.now())
                     .expenseType(expenseType)
                     .build();
@@ -128,7 +155,7 @@ public Page<ExpenseResponseDTO> getExpensesByGroupId(Integer groupId, int page, 
     public ResponseEntity<?> deleteExpense(UUID expenseId) {
         Expense expense = expenseRepository.findById(expenseId).orElseThrow(() -> new EntityNotFoundException("No expense found with this id"));
 
-        List<Split> splits = splitRepository.getSplitsByExpense(expense);
+        List<Split> splits = splitRepository.findByExpense(expense);
         User creator = expense.getPaidBy();
         boolean flag = true;
         for(Split split : splits){
