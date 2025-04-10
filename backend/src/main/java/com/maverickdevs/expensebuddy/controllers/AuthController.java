@@ -48,8 +48,8 @@ public class AuthController {
             if(Boolean.FALSE.equals(isSignUped)){
                 return new ResponseEntity<>("Already Exist", HttpStatus.BAD_REQUEST);
             }
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userInfoDto.getUsername());
-            String jwtToken = jwtService.GenerateToken(userInfoDto.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userInfoDto.getEmail());
+            String jwtToken = jwtService.GenerateToken(userInfoDto.getEmail());
             return new ResponseEntity<>(JwtResponseDTO.builder().accessToken(jwtToken).
                     token(refreshToken.getToken()).build(), HttpStatus.OK);
         }catch (Exception ex){
@@ -59,14 +59,14 @@ public class AuthController {
 
     @PostMapping("auth/v1/login")
     public ResponseEntity AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO){
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword()));
         if(authentication.isAuthenticated()){
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequestDTO.getUsername());
-            Integer userId = userService.getUserIdByUsername(authRequestDTO.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequestDTO.getEmail());
+            Integer userId = userService.getUserIdByEmail(authRequestDTO.getEmail());
 
             if(Objects.nonNull(userId) && Objects.nonNull(refreshToken)){
                 return new ResponseEntity<>(JwtResponseDTO.builder()
-                        .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
+                        .accessToken(jwtService.GenerateToken(authRequestDTO.getEmail()))
                         .token(refreshToken.getToken())
                         .build(), HttpStatus.OK);
             }
@@ -80,7 +80,7 @@ public class AuthController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(userInfo -> {
-                    String accessToken = jwtService.GenerateToken(userInfo.getUsername());
+                    String accessToken = jwtService.GenerateToken(userInfo.getEmail());
                     return JwtResponseDTO.builder()
                             .accessToken(accessToken)
                             .token(refreshTokenRequestDTO.getToken()).build();

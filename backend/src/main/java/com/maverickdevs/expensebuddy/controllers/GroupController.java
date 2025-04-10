@@ -1,26 +1,19 @@
 package com.maverickdevs.expensebuddy.controllers;
 
 import com.maverickdevs.expensebuddy.dto.request.GroupRequestDTO;
+import com.maverickdevs.expensebuddy.dto.response.DebtResponseDTO;
 import com.maverickdevs.expensebuddy.dto.response.GroupResponseDTO;
-import com.maverickdevs.expensebuddy.entities.Expense;
 import com.maverickdevs.expensebuddy.entities.Group;
-import com.maverickdevs.expensebuddy.entities.User;
 import com.maverickdevs.expensebuddy.services.impl.GroupServiceImpl;
-import com.maverickdevs.expensebuddy.services.impl.UserServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.support.NullValue;
-import org.springframework.data.web.PagedModel;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
 
 
-import java.util.Collections;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -37,6 +30,13 @@ public class GroupController {
     public List<Group> getallgroups(){
         return groupService.getallgroups();
     }
+
+    @GetMapping("/{groupId}/group-debts")
+    public ResponseEntity<?> getGroupDebts(@PathVariable Integer groupId){
+        List<DebtResponseDTO> debts = groupService.getGroupDebts(groupId);
+        return ResponseEntity.ok(debts);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> addgroup(@RequestBody GroupRequestDTO groupRequestDTO){
         GroupResponseDTO groupResponseDTO = groupService.createGroup(groupRequestDTO);

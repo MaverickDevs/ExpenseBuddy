@@ -15,4 +15,12 @@ public interface SplitRepository extends JpaRepository<Split, UUID> {
 
     @Query("SELECT s FROM Split s WHERE s.expense = :expense")
     List<Split> findByExpense(@Param("expense") Expense expense);
+
+    @Query("SELECT s FROM Split s " +
+            "WHERE s.expense.group.groupId = :groupId " +
+            "AND (s.debtor.id = :userId OR s.creditor.id = :userId)")
+    List<Split> findSplitsInGroupInvolvingUser(
+            @Param("groupId") Integer groupId,
+            @Param("userId") Integer userId
+    );
 }
