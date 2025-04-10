@@ -54,5 +54,4 @@ public class GroupController {
 
     //get groups using userid
 
-
 }
