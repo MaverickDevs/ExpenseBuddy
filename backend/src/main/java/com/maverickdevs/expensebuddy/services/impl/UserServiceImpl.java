@@ -30,24 +30,24 @@ public class UserServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
         if(user == null){
             throw new UsernameNotFoundException("Could not find User!!");
         }
         return new CustomUserDetails(user);
     }
 
-//    public Integer getUserIdByUsername(String username){
-//        return Optional.of(userRepository.findByUsername(username)).map(User::getId).orElse(null);
-//    }
-
-    public Integer getUserIdByEmail(String email){
-        return Optional.of(userRepository.findByEmail(email)).map(User::getId).orElse(null);
+    public Integer getUserIdByUsername(String username){
+        return Optional.of(userRepository.findByUsername(username)).map(User::getId).orElse(null);
     }
 
+//    public Integer getUserIdByEmail(String email){
+//        return Optional.of(userRepository.findByEmail(email)).map(User::getId).orElse(null);
+//    }
+
     public User checkIfUserAlreadyExists(UserInfoDTO userInfoDto) {
-        return userRepository.findByEmail(userInfoDto.getEmail());
+        return userRepository.findByUsername(userInfoDto.getUsername());
     }
 
     public Boolean signupUser(UserInfoDTO userInfoDTO) {

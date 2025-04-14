@@ -134,7 +134,7 @@ public class GroupServiceImpl {
     public List<DebtResponseDTO> getGroupDebts(Integer groupId) {
         User currentuser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        User user = userRepository.findByEmail(currentuser.getUsername());
+        User user = userRepository.findByUsername(currentuser.getUsername());
 
         List<Split> splits = splitRepository.findSplitsInGroupInvolvingUser(groupId, user.getId());
 
