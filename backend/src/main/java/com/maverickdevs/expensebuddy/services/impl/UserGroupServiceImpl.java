@@ -53,6 +53,6 @@ public class UserGroupServiceImpl {
                         .owedAmount(BigDecimal.valueOf(0))
                         .build())
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(groups);
+        return ResponseEntity.ok(groupResponseDTOList);
     }
 }
