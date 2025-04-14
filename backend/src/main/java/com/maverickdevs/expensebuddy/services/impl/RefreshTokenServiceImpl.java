@@ -25,8 +25,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
-    public RefreshToken createRefreshToken(String email) {
-        User userInfoExtracted = userRepository.findByEmail(email);
+    public RefreshToken createRefreshToken(String username) {
+        User userInfoExtracted = userRepository.findByUsername(username);
 
 
         RefreshToken refreshToken = RefreshToken.builder()

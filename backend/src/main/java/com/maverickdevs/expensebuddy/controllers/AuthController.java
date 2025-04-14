@@ -48,7 +48,7 @@ public class AuthController {
             if(Boolean.FALSE.equals(isSignUped)){
                 return new ResponseEntity<>("Already Exist", HttpStatus.BAD_REQUEST);
             }
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userInfoDto.getEmail());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userInfoDto.getUsername());
             String jwtToken = jwtService.GenerateToken(userInfoDto.getUsername());
             return new ResponseEntity<>(JwtResponseDTO.builder().accessToken(jwtToken).
                     token(refreshToken.getToken()).build(), HttpStatus.OK);
@@ -80,7 +80,7 @@ public class AuthController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(userInfo -> {
-                    String accessToken = jwtService.GenerateToken(userInfo.getEmail());
+                    String accessToken = jwtService.GenerateToken(userInfo.getUsername());
                     return JwtResponseDTO.builder()
                             .accessToken(accessToken)
                             .token(refreshTokenRequestDTO.getToken()).build();
