@@ -23,4 +23,17 @@ public interface SplitRepository extends JpaRepository<Split, UUID> {
             @Param("groupId") Integer groupId,
             @Param("userId") Integer userId
     );
+
+    @Query("SELECT s.expense.category, SUM(s.splitAmount) " +
+            "FROM Split s " +
+            "WHERE s.debtor.id = :userId " +
+            "AND s.isSettled = true " +
+            "GROUP BY s.expense.category")
+    List<Object[]> findUserSpendingSettledByCategory(@Param("userId") Integer userId);
+
+    @Query("SELECT s.expense.category, SUM(s.splitAmount) " +
+            "FROM Split s " +
+            "WHERE s.debtor.id = :userId " +
+            "GROUP BY s.expense.category")
+    List<Object[]> findUserSpendingAllByCategory(@Param("userId") Integer userId);
 }
