@@ -151,11 +151,13 @@ public class GroupServiceImpl {
             Integer creditor = split.getCreditor().getId();
             BigDecimal amount = split.getSplitAmount();
 
-            if(debtor.equals(user.getId())){
-                netBalances.merge(creditor, amount, BigDecimal::add);
-            }
-            if(creditor.equals(user.getId())){
-                netBalances.merge(debtor, amount.negate(), BigDecimal::add);
+            if(!split.getIsSettled()) {
+                if(debtor.equals(user.getId())){
+                    netBalances.merge(creditor, amount, BigDecimal::add);
+                }
+                if(creditor.equals(user.getId())){
+                    netBalances.merge(debtor, amount.negate(), BigDecimal::add);
+                }
             }
         }
 
