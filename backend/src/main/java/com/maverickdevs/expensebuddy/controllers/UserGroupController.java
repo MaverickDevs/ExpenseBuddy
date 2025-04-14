@@ -1,14 +1,13 @@
 package com.maverickdevs.expensebuddy.controllers;
 
 import com.maverickdevs.expensebuddy.dto.response.UserDTO;
+import com.maverickdevs.expensebuddy.services.impl.JwtServiceImpl;
 import com.maverickdevs.expensebuddy.services.impl.UserGroupServiceImpl;
+import com.maverickdevs.expensebuddy.utils.ResponseUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,8 +17,12 @@ public class UserGroupController {
 
     private final UserGroupServiceImpl userGroupimpl;
 
-    public UserGroupController(UserGroupServiceImpl userGroupimpl){
+    private final JwtServiceImpl jwtService;
+
+    public UserGroupController(UserGroupServiceImpl userGroupimpl, JwtServiceImpl jwtService){
+
         this.userGroupimpl = userGroupimpl;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/{groupId}/users")
@@ -34,6 +37,18 @@ public class UserGroupController {
         }
 
         return ResponseEntity.ok(userDTOSs);
+    }
+
+
+
+    @GetMapping("/getgroupsforuser")
+    public ResponseEntity<?> getGroupsForUser(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtService.extractUsername(token);
+        if(username == null || username.isEmpty()){
+            ResponseUtils.createResponse("error","No such user exists");
+        }
+        return ResponseEntity.ok(userGroupimpl.getGroupsForUser(username));
     }
 
 
