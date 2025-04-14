@@ -1,27 +1,30 @@
 package com.maverickdevs.expensebuddy.services.impl;
 
 import com.maverickdevs.expensebuddy.dto.request.GroupRequestDTO;
+import com.maverickdevs.expensebuddy.dto.response.DebtResponseDTO;
 import com.maverickdevs.expensebuddy.dto.response.GroupResponseDTO;
-import com.maverickdevs.expensebuddy.entities.Group;
-import com.maverickdevs.expensebuddy.entities.User;
-import com.maverickdevs.expensebuddy.entities.UserGroup;
-import com.maverickdevs.expensebuddy.entities.UserGroupId;
+import com.maverickdevs.expensebuddy.entities.*;
 import com.maverickdevs.expensebuddy.repositories.GroupRepository;
+import com.maverickdevs.expensebuddy.repositories.SplitRepository;
 import com.maverickdevs.expensebuddy.repositories.UserGroupRepository;
 import com.maverickdevs.expensebuddy.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Data
@@ -30,12 +33,14 @@ public class GroupServiceImpl {
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
     private final UserRepository userRepository;
+    private final SplitRepository splitRepository;
 
     @Autowired
-    public GroupServiceImpl(GroupRepository groupRepository, UserRepository userRepository, UserGroupRepository userGroupRepository){
+    public GroupServiceImpl(GroupRepository groupRepository, UserRepository userRepository, UserGroupRepository userGroupRepository, SplitRepository splitRepository){
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.userGroupRepository = userGroupRepository;
+        this.splitRepository = splitRepository;
 
     }
     public List<Group> getallgroups(){
@@ -126,4 +131,45 @@ public class GroupServiceImpl {
     }
 
 
+    public List<DebtResponseDTO> getGroupDebts(Integer groupId) {
+        User currentuser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = userRepository.findByUsername(currentuser.getUsername());
+
+        List<Split> splits = splitRepository.findSplitsInGroupInvolvingUser(groupId, user.getId());
+
+        List<Integer> userIds = splits.stream().flatMap(
+                split-> Stream.of(split.getDebtor().getId(), split.getCreditor().getId()))
+                .distinct().toList();
+
+        Map<Integer, String> userNames = userRepository.findAllById(userIds).stream().collect(Collectors.toMap(User::getId, User::getUsername));
+
+        Map<Integer, BigDecimal> netBalances = new HashMap<>();
+
+        for(Split split:splits){
+            Integer debtor = split.getDebtor().getId();
+            Integer creditor = split.getCreditor().getId();
+            BigDecimal amount = split.getSplitAmount();
+
+            if(!split.getIsSettled()) {
+                if(debtor.equals(user.getId())){
+                    netBalances.merge(creditor, amount, BigDecimal::add);
+                }
+                if(creditor.equals(user.getId())){
+                    netBalances.merge(debtor, amount.negate(), BigDecimal::add);
+                }
+            }
+        }
+
+        List<DebtResponseDTO> ans =  netBalances.entrySet().stream().map(entry -> {
+            DebtResponseDTO res = new DebtResponseDTO();
+            res.setDebt(entry.getValue());
+            res.setDebtorName(userNames.get(entry.getKey()));
+            res.setDebtorId(entry.getKey());
+
+            return res;
+        }).toList();
+
+        return ans;
+    }
 }

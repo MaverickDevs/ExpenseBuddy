@@ -42,6 +42,10 @@ public class UserServiceImpl implements UserDetailsService {
         return Optional.of(userRepository.findByUsername(username)).map(User::getId).orElse(null);
     }
 
+//    public Integer getUserIdByEmail(String email){
+//        return Optional.of(userRepository.findByEmail(email)).map(User::getId).orElse(null);
+//    }
+
     public User checkIfUserAlreadyExists(UserInfoDTO userInfoDto) {
         return userRepository.findByUsername(userInfoDto.getUsername());
     }
