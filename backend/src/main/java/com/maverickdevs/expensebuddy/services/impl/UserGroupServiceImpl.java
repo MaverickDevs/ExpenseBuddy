@@ -50,7 +50,7 @@ public class UserGroupServiceImpl {
                         .groupId(group.getGroupId())
                         .name(group.getName())
                         .lastModifiedAt(group.getLastModifiedAt())
-                        .owedAmount(BigDecimal.valueOf(100))
+                        .owedAmount(BigDecimal.valueOf(0))
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(groups);
