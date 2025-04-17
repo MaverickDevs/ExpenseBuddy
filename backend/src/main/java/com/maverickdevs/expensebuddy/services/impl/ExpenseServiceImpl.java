@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -187,5 +188,20 @@ public ExpenseWithSplitsResponseDTO getExpenseWithSplits(UUID expenseId){
     public ResponseEntity<?> getAll() {
         List<Expense> expenses =  expenseRepository.findAll();
         return ResponseEntity.ok(expenses);
+    }
+
+    public Map<CategoryType, BigDecimal> getUserSplits(Integer userId, boolean includeNotSettled) {
+        List<Object[]> results;
+        if (includeNotSettled) {
+            results = splitRepository.findUserSpendingAllByCategory(userId);
+        } else {
+            results = splitRepository.findUserSpendingSettledByCategory(userId);
+        }
+
+        return results.stream().collect(Collectors.toMap(
+                result -> (CategoryType) result[0],
+                result -> (BigDecimal) result[1],
+                BigDecimal::add
+        ));
     }
 }
