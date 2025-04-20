@@ -1,9 +1,15 @@
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
-import GroupCard from '../components/GroupCard'
+import GroupCard from '../../components/GroupCard'
+import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
+
+// Inside your component:
 
 const groups = () => {
+
+  const router = useRouter();
 
   const [groups, setGroups] = useState([
     {
@@ -87,6 +93,9 @@ const groups = () => {
           data={groups}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
+            <TouchableOpacity 
+            onPress={() => router.push(`/groups/${item.id}?name=${item.name}` as any)}
+          >
             <GroupCard
               id={item.id}
               name={item.name}
@@ -94,6 +103,8 @@ const groups = () => {
               edited={item.edited}
               owed={item.owed}
             />
+          </TouchableOpacity>
+           
           )}
           contentContainerStyle={styles.listContainer}
           ItemSeparatorComponent={() => <View style={{ height: 0 }} />}
