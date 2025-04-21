@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // works in Expo
+import { getCategoryIcon } from '@/utils/CategoryIcon';
 
 
 type ExpenseCardProps = {
@@ -12,26 +13,6 @@ type ExpenseCardProps = {
   category: string,
 };
 
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'FOOD':
-      return 'food';
-    case 'ENTERTAINMENT':
-      return 'movie';
-    case 'LIVING':
-      return 'home';
-    case 'MEDICAL':
-      return 'medical-bag';
-    case 'CLOTHING':
-      return 'tshirt-crew';
-    case 'PERSONAL':
-      return 'face-man-profile';
-    case 'FITNESS':
-      return 'dumbbell';
-    default:
-      return 'help-circle'; // fallback icon
-  }
-};
 
 
 const ExpenseCard: React.FC<ExpenseCardProps> = ({ id, paid_name, description, amount, category }) => {
