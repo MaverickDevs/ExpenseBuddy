@@ -36,7 +36,8 @@ export default function RootLayout() {
       <Stack.Screen
         name="(main)"
         options={{ headerShown: false }}
-        redirect={isRefreshValid()}
+        redirect={!isRefreshValid()}
+        //This should be not ||||||| dont forget to change it back
       />
     </Stack>
   );
