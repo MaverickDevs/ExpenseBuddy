@@ -38,7 +38,9 @@ const ExpenseCard: React.FC<ExpenseCardProps> = ({ id, paid_name, description, a
           </View>
         </View>
         <View style={styles.rightbox}>
+        <Text style={styles.name}>
           {amount}₹
+        </Text>
         </View>
 
 
@@ -92,8 +94,6 @@ const styles = StyleSheet.create({
     marginRight: 20,
     justifyContent: 'center',
     alignContent: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
     //backgroundColor:'blue'
   },
   gradient: {
