@@ -3,10 +3,12 @@ import { ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import ExpenseCard from '../../../components/ExpenseCard';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { FloatingActionButton } from '@/app/components/FloatingButton';
 
-const group_home = () => {
+export default function GroupHome(){
   const { name } = useLocalSearchParams<{ name: string }>();
+  const router = useRouter();
   const [expenses, setExpenses] = useState([
     {
       id: "9f4c0d40-8a2a-4d01-9850-49ef60f70d1a",
@@ -57,6 +59,13 @@ const group_home = () => {
     setLoading(false);
   }
 
+  function addExpense() {
+    console.log('Add Expense button pressed');
+    router.navigate('/(modals)/groupexp');
+    
+  }
+
+
   return (
 
     <>
@@ -91,13 +100,12 @@ const group_home = () => {
           ItemSeparatorComponent={() => <View style={{ height: 0 }} />}
         />
       )}
+      <FloatingActionButton onPress={addExpense}/>
+      
     </>
 
   )
 }
-
-
-export default group_home;
 
 const styles = StyleSheet.create({
   listContainer: {
