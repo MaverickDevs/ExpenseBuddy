@@ -7,12 +7,15 @@ import '../global.css';
 
 export default function RootLayout() {
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isValid, setIsValid] = useState(false);
   const { isRefreshValid } = useAuthStore();
 
   // Wait for Zustand to rehydrate
   useEffect(() => {
     const rehydrate = async () => {
       await useAuthStore.persist.rehydrate();
+      const valid = useAuthStore.getState().isRefreshValid(); // force fresh read
+      setIsValid(valid);
       setIsHydrated(true);
     };
     rehydrate();
@@ -31,17 +34,17 @@ export default function RootLayout() {
       <Stack.Screen
         name="(auth)"
         options={{ headerShown: false }}
-        redirect={!isRefreshValid()}
+        redirect={isValid}
       />
       <Stack.Screen
         name="(tabs)"
         options={{ headerShown: false }}
-        redirect={isRefreshValid()}
+        redirect={!isValid}
       />
       <Stack.Screen
         name="(modals)"
         options={{ headerShown: false }}
-        redirect={isRefreshValid()}
+        redirect={!isValid}
       />
     </Stack>
   );

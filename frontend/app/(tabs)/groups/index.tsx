@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import GroupCard from '../../components/GroupCard'
 import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
+import { useAuthStore } from '@/store/authStore';
 
 // Inside your component:
 
@@ -68,10 +69,50 @@ const groups = () => {
     fetchGroups();
   }, []);
 
-  const fetchGroups = async ()=>{
-    //api callll
-    setLoading(false);
-  }
+  const fetchGroups = async () => {
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+      console.log("Access token", accessToken)
+      const response = await fetch("http://192.168.1.3:8080/api/usergroups/getgroupsforuser", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch groups");
+      }
+  
+      const data = await response.json();
+      console.log("Raw response data:", data);
+  
+      // Accessing the actual group data inside `body`
+      const groupsArray = data.body;
+  
+      if (!Array.isArray(groupsArray)) {
+        throw new Error("Expected `body` to be an array");
+      }
+  
+      // Mapping the group data to match the expected state shape
+      const formattedGroups = groupsArray.map((group: any) => ({
+        id: group.groupId, // Mapping `groupId` to `id`
+        name: group.name,
+        size: group.users.length.toString(), // Assuming you want `users.length` for `size`
+        edited: new Date(group.lastModifiedAt).toLocaleString(), // Converting `lastModifiedAt` to string
+        owed: group.owedAmount.toString(), // Assuming `owedAmount` is the amount you want for `owed`
+      }));
+  
+      setGroups(formattedGroups);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
 
   return (
     <View>
