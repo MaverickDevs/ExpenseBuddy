@@ -4,103 +4,84 @@ import * as yup from 'yup';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { apiBaseUrl } from '@/utils/constants';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
-  interface FormData {
-    username: string;
-    password: string;
-  }
-  
-  interface FormErrors {
-    username?: string;
-    password?: string;
-  }
-
   const setTokens = useAuthStore((state) => state.setTokens);
+  const router = useRouter();
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
-  // Set up errors state
-  const [errors, setErrors] = useState<FormErrors>({});
 
-  // Handle input changes
-  const handleChange = (field: keyof FormData, value: string): void => {
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (field: string, value: string) => {
     setFormData({
       ...formData,
       [field]: value
     });
   };
 
-  const handleSubmit = async (): Promise<void> => {
+  const handleSubmit = async () => {
     try {
-      // Reset errors
       setErrors({});
-      
-      // Validate all fields
       await validationSchema.validate(formData, { abortEarly: false });
-      
-      // If validation passes, you can submit the form
-      console.log('Form is valid:', formData);
-      // Call your API here
-      try{
-        const res = await axios.post(`${apiBaseUrl}/auth/v1/login`, {...formData});
-        console.log(res.data)
-        const refreshExpiry = Date.now() + 7 * 24 * 3600 * 1000; // 7 days
-        setTokens(res.data.accessToken, res.data.token, refreshExpiry);
-      }catch(error){
-        console.log(error)
-      }
-      
+
+      const res = await axios.post(`${apiBaseUrl}/auth/v1/login`, { ...formData });
+      const refreshExpiry = Date.now() + 7 * 24 * 3600 * 1000; // 7 days
+      setTokens(res.data.accessToken, res.data.refreshToken, refreshExpiry);
+
+      // Redirect to main screen after login
+      router.replace('/(tabs)');
     } catch (error) {
-      // Handle validation errors
       if (error instanceof yup.ValidationError) {
-        const newErrors: FormErrors = {};
-        
+        const newErrors: any = {};
         error.inner.forEach((err) => {
           if (err.path) {
-            newErrors[err.path as keyof FormErrors] = err.message;
+            newErrors[err.path] = err.message;
           }
         });
-        
         setErrors(newErrors);
-        console.log('Validation errors:', newErrors);
       }
     }
   };
 
-
   const validationSchema = yup.object().shape({
     username: yup
       .string()
-      .min(6, ({ min }) => `Username must be at least ${min} characters`)
+      .min(3, 'Username must be at least 3 characters')
       .required('Username is required'),
     password: yup
       .string()
-      .min(6, ({ min }) => `Password must be at least ${min} characters`)
+      .min(3, 'Password must be at least 3 characters')
       .required('Password is required'),
   });
-
 
   return (
     <View style={styles.parent}>
       <Text style={styles.headerText}>Expense Buddy</Text>
       <TextInput
         style={styles.formInput}
-        placeholder="Enter user name"
+        placeholder="Enter username"
         value={formData.username}
-        onChangeText={(text) => handleChange('username', text)}      />
-      {errors.username ? <Text style={styles.errorText}>{errors.username}</Text> : null}
+        onChangeText={(text) => handleChange('username', text)}
+      />
+      {/* {errors.username && <Text style={styles.errorText}>{errors.username}</Text>} */}
+
       <TextInput
         style={styles.formInput}
-        placeholder="Enter password"    
+        placeholder="Enter password"
         secureTextEntry={true}
         value={formData.password}
-        onChangeText={(text) => handleChange('password', text)}      />
-       {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-      <Pressable  onPress={handleSubmit} style={styles.submitButton}><Text style={styles.buttonText}>Login</Text></Pressable>
+        onChangeText={(text) => handleChange('password', text)}
+      />
+      {/* {errors.password && <Text style={styles.errorText}>{errors.password}</Text>} */}
 
+      <Pressable onPress={handleSubmit} style={styles.submitButton}>
+        <Text style={styles.buttonText}>Login</Text>
+      </Pressable>
     </View>
   );
 }
@@ -111,37 +92,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    height:"100%"
+    height: '100%',
   },
   formInput: {
-     height: 40, width: 200, borderColor: 'gray', borderWidth: 1,padding:10 , marginTop: 10, }
-     ,
-     submitButton: {
-        backgroundColor: 'gray',
-        color: 'white',
-        padding: 10,
-        margin: 10,
-        width: 200,
-        borderRadius: 5,
-        textAlign: 'center',
-     },
-      headerText: {
-          fontSize: 24,
-          fontWeight: 'bold',
-          color: 'black',
-          marginBottom: 20,
-    
-      },
-      errorText: {
-        color: 'red',
-        fontSize: 14,
-        marginTop: 3,
-        marginBottom: 10,
-      },
-      buttonText:{
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center'
-      }
+    height: 40,
+    width: 200,
+    borderColor: 'gray',
+    borderWidth: 1,
+    padding: 10,
+    marginTop: 10,
+  },
+  submitButton: {
+    backgroundColor: 'gray',
+    padding: 10,
+    margin: 10,
+    width: 200,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 3,
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
 });

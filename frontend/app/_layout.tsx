@@ -1,25 +1,31 @@
-// app/_layout.tsx
-import { Stack } from 'expo-router';
-import { useAuthStore } from '../store/authStore';
-import { ActivityIndicator, View } from 'react-native';
 import { useEffect, useState } from 'react';
+import { router, Stack } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuthStore } from '../store/authStore';
 import '../global.css';
 
 export default function RootLayout() {
   const [isHydrated, setIsHydrated] = useState(false);
-  const [isValid, setIsValid] = useState(false);
   const { isRefreshValid } = useAuthStore();
 
   // Wait for Zustand to rehydrate
   useEffect(() => {
     const rehydrate = async () => {
       await useAuthStore.persist.rehydrate();
-      const valid = useAuthStore.getState().isRefreshValid(); // force fresh read
-      setIsValid(valid);
       setIsHydrated(true);
     };
     rehydrate();
   }, []);
+
+  useEffect(() => {
+    if (isHydrated) {
+      if (isRefreshValid()) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/(auth)/login');
+      }
+    }
+  }, [isHydrated]);
 
   if (!isHydrated) {
     return (
@@ -34,17 +40,10 @@ export default function RootLayout() {
       <Stack.Screen
         name="(auth)"
         options={{ headerShown: false }}
-        redirect={isValid}
       />
       <Stack.Screen
         name="(tabs)"
         options={{ headerShown: false }}
-        redirect={!isValid}
-      />
-      <Stack.Screen
-        name="(modals)"
-        options={{ headerShown: false }}
-        redirect={!isValid}
       />
     </Stack>
   );
